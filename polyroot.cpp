@@ -10,6 +10,8 @@
 
 using namespace std; 
 
+
+
 int main (int argc, char *argv[])
 {
 	ifstream inFile; 
@@ -67,7 +69,17 @@ int main (int argc, char *argv[])
     {
       cout<<poly_out[i]<<endl; 
     }
+
   }
+
+
+
+
+
+
+
+
+  
 
 
   /*--------------------*/
@@ -97,21 +109,50 @@ int main (int argc, char *argv[])
   //  /*--------------------*/
 
 
-
-
-
-
-
-
-
-
-
- //  	/*Insert algorithm here*/
-
+ //  
 
  //  	//OUTPUT
 
-	
+	 /*Insert algorithm here*/
+
+  double r(0), s(0); 
+
+  r = coeff[1]/coeff[0]; 
+  s = coeff[2]/coeff[0]; 
+  cout<<"-------------"<<endl;
+  cout<<r<<endl;
+  cout<<s<<endl; 
+  reverse(coeff.begin(),coeff.end()); //reverse again for convenience 
+  double b[coeff.size()] = {0};
+  double c[coeff.size()] = {0}; 
+
+
+
+
+  for (int n = coeff.size()-1; n>-1; n--)
+  {
+    b[n] = coeff[n] + r*b[n+1] + s*b[n+2]; 
+
+  }
+  for (int n = 0; n<coeff.size(); n++)
+  {
+    c[n] = b[n] + r*c[n+1] + s*c[n+2]; 
+  }
+  cout<<"-------------"<<endl; 
+  cout<<"b[n]: "<<endl; 
+  for(int n = 0; n<coeff.size();n++)
+  {
+    cout<<b[n]<<endl;
+  }
+  cout<<"-------------"<<endl;
+  cout<<"c[n]: "<<endl; 
+  for(int n = 0; n<coeff.size();n++)
+  {
+    cout<<c[n]<<endl;
+  }
+
+
+
 
 
 
