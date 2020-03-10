@@ -10,7 +10,7 @@
 
 using namespace std; 
 
-
+bool checkRS (double r, double s, double deltaR, double deltaS);
 
 int main (int argc, char *argv[])
 {
@@ -27,7 +27,6 @@ int main (int argc, char *argv[])
 	}
 	else if (argc == 1)
 	{
-		cout<<"Please specify filename: "; 
 		getline(cin, fileName); 
 		cout<<"File name: "<<fileName<<endl; 
 	}
@@ -73,7 +72,12 @@ int main (int argc, char *argv[])
   }
 
 
+  cout<<"----------------"<<endl; 
 
+  for (int i=0; i<coeff.size();i++)
+  {
+    cout<<coeff[i]<<endl;
+  }
 
 
 
@@ -116,6 +120,7 @@ int main (int argc, char *argv[])
 	 /*Insert algorithm here*/
 
   double r(0), s(0); 
+  double prevR(0), prevS(0); 
 
   r = coeff[1]/coeff[0]; 
   s = coeff[2]/coeff[0]; 
@@ -123,21 +128,35 @@ int main (int argc, char *argv[])
   cout<<r<<endl;
   cout<<s<<endl; 
   reverse(coeff.begin(),coeff.end()); //reverse again for convenience 
-  double b[coeff.size()] = {0};
-  double c[coeff.size()] = {0}; 
-
+  double b[coeff.size()] = {0.0};
+  double c[coeff.size()] = {0.0}; 
+ 
 
 
 
   for (int n = coeff.size()-1; n>-1; n--)
   {
-    b[n] = coeff[n] + r*b[n+1] + s*b[n+2]; 
+    double temp_rBn = 0; 
+    double temp_sBn = 0; 
+
+    temp_rBn = (n+1<=coeff.size()-1)? r*b[n+1]:0.0; 
+    temp_sBn = (n+2<=coeff.size()-1)? s*b[n+2]:0.0;  
+    b[n] = coeff[n]  + temp_rBn + temp_sBn;
 
   }
-  for (int n = 0; n<coeff.size(); n++)
+
+
+  for (int n = coeff.size()-1; n>-1; n--)
   {
-    c[n] = b[n] + r*c[n+1] + s*c[n+2]; 
+    double temp_rBn = 0; 
+    double temp_sBn = 0; 
+
+    temp_rBn = (n+1<=coeff.size()-1)? r*c[n+1]:0.0; 
+    temp_sBn = (n+2<=coeff.size()-1)? s*c[n+2]:0.0;  
+    c[n] = b[n]  + temp_rBn + temp_sBn;
+
   }
+
   cout<<"-------------"<<endl; 
   cout<<"b[n]: "<<endl; 
   for(int n = 0; n<coeff.size();n++)
@@ -151,6 +170,87 @@ int main (int argc, char *argv[])
     cout<<c[n]<<endl;
   }
 
+  double denom = (c[2]*c[2])-(c[1]*c[3]); 
+  double deltaR = (b[0]*c[3] - b[1]*c[2]) / denom ;
+  double deltaS = (b[1]*c[1] - b[0]*c[2]) / denom  ;
+
+  cout<<"-------------"<<endl; 
+  cout<<"deltaR + R :"<<endl; 
+  cout<<deltaR+r<<endl; 
+  cout<<"-------------"<<endl; 
+  cout<<"deltaS + S :"<<endl; 
+  cout<<deltaS+s<<endl; 
+
+  while(!checkRS(r, s, deltaR, deltaS))
+  {
+    prevR = r;
+    prevS = s; 
+    r = deltaR + r;
+    s = deltaS + s;
+
+    if (prevR != r && prevS != s)
+    {
+      for(int n=0;n<coeff.size();n++)
+      {
+        b[n] = 0; 
+        c[n] = 0; 
+      }
+    /*-------------------------------*/
+      for (int n = coeff.size()-1; n>-1; n--)
+      {
+        double temp_rBn = 0; 
+        double temp_sBn = 0; 
+
+        temp_rBn = (n+1<=coeff.size()-1)? r*b[n+1]:0.0; 
+        temp_sBn = (n+2<=coeff.size()-1)? s*b[n+2]:0.0;  
+        b[n] = coeff[n]  + temp_rBn + temp_sBn;
+
+      }
+
+
+      for (int n = coeff.size()-1; n>-1; n--)
+      {
+        double temp_rBn = 0; 
+        double temp_sBn = 0; 
+
+        temp_rBn = (n+1<=coeff.size()-1)? r*c[n+1]:0.0; 
+        temp_sBn = (n+2<=coeff.size()-1)? s*c[n+2]:0.0;  
+        c[n] = b[n]  + temp_rBn + temp_sBn;
+
+      }
+
+      cout<<"-------------"<<endl; 
+      cout<<"b[n]: "<<endl; 
+      for(int n = 0; n<coeff.size();n++)
+      {
+        cout<<b[n]<<endl;
+      }
+      cout<<"-------------"<<endl;
+      cout<<"c[n]: "<<endl; 
+      for(int n = 0; n<coeff.size();n++)
+      {
+        cout<<c[n]<<endl;
+      }
+    /*-------------------------------*/
+      denom = (c[2]*c[2])-(c[1]*c[3]); 
+      deltaR = (b[0]*c[3] - b[1]*c[2]) / denom ;
+      deltaS = (b[1]*c[1] - b[0]*c[2]) / denom  ;
+
+      cout<<"-------------"<<endl; 
+      cout<<"deltaR + R :"<<endl; 
+      cout<<deltaR+r<<endl; 
+      cout<<"-------------"<<endl; 
+      cout<<"deltaS + S :"<<endl; 
+      cout<<deltaS+s<<endl; 
+
+    }
+
+
+
+
+
+  }
+
 
 
 
@@ -158,4 +258,13 @@ int main (int argc, char *argv[])
 
 
 	return 0; 
+} 
+
+
+
+
+bool checkRS (double r, double s, double deltaR, double deltaS)
+{
+  return (deltaR/r>0 && deltaS/s>0); 
+
 } 
