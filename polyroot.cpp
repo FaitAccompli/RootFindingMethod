@@ -3,17 +3,19 @@
 #include <fstream> //file reading
 #include <vector> //vector 
 #include <cstdlib> //system("cls")
-#include <algorithm>    // std::reverse
+#include <algorithm>  // std::reverse
 #include <cmath> //abs()
-
+#include <iomanip> //setprecision();
 
 
 using namespace std; 
 
-bool checkRS (double r, double s, double deltaR, double deltaS);
-vector<double> getCoeff (string _fileName); 
-vector< vector <double>> getRoots(int _degree, vector<double> _coeff);
-
+bool checkRS (long double r, long double s, long double deltaR, long double deltaS);
+bool isEven(int degree);
+vector<long double> getCoeff (string _fileName); 
+vector< vector <long double>> getRoots(int _degree, vector<long double> _coeff);
+long double calculatePosRoot(long double r, long double s);
+long double calculateNegRoot(long double r, long double s);
 
 int main (int argc, char *argv[])
 {
@@ -38,11 +40,15 @@ int main (int argc, char *argv[])
 
 
   //once we get the file name, pass this as parameter so we can open the file and get the coefficients 
-  vector<double> coeff = getCoeff(fileName); 
+  vector<long double> coeff = getCoeff(fileName); 
 
   reverse(coeff.begin(),coeff.end()); 
   degree = coeff[coeff.size()-1];
+
+  
+
   coeff.pop_back(); 
+
   system("cls"); 
   string poly_out[coeff.size()];
   int poly_outSize = sizeof(poly_out)/sizeof(poly_out[0]); //get the size of an array
@@ -62,13 +68,11 @@ int main (int argc, char *argv[])
 
   cout<<"----------------"<<endl; 
 
-  for (int i=0; i<coeff.size();i++)
-  {
-    cout<<coeff[i]<<endl;
-  }
+
 
 //end of first output 
-vector <vector<double>> roots = getRoots(degree, coeff); //get roots using returnR
+
+vector <vector<long double>> roots = getRoots(degree, coeff); //get roots using returnR
 
 
   return 0; 
@@ -77,44 +81,64 @@ vector <vector<double>> roots = getRoots(degree, coeff); //get roots using retur
 
 
    /*Insert algorithm here*/
-vector< vector <double>> getRoots(int _degree, vector<double> _coeff)
+vector< vector <long double>> getRoots(int _degree, vector<long double> _coeff)
 {
+  
   //variable declaration 
-  double degree = _degree; 
-  double r = 0 , s = 0; 
+  int degree = _degree; 
+  vector <vector <long double>> roots(degree, vector <long double> (2, 0)); 
+  long double r = 0.00 , s = 0.00; 
 
 
-  double prevR = 0, prevS = 0; 
-  double denom = 0; 
-  double deltaR = 0, deltaS = 0; 
+  long double prevR = 0, prevS = 0; 
+  long double denom = 0; 
+  long double deltaR = 0, deltaS = 0; 
 
-  vector<double> coeff = _coeff; 
+  vector<long double> coeff (_coeff);
 
-  reverse(coeff.begin(),coeff.end()); //reverse again for convenience 
+   //reverse again for convenience 
+ 
 
   //calculate for initial values for r and s 
   r = coeff[1]/coeff[0]; 
   s = coeff[2]/coeff[0];
+  reverse(coeff.begin(),coeff.end());
+  for(int i=0; i<coeff.size(); i++) cout<<coeff[i]<<endl; 
 
 
-  while(!checkRS(r, s, deltaR, deltaS)) 
+
+  
+  int limit = (isEven(degree)? degree : ((degree-1)/2)+1);
+
+  // for (int i = 0; i<limit; i++)
+  // {
+
+
+  //   //while 
+
+  // }
+
+
+  while(!checkRS(r, s, deltaR, deltaS)) // checkpoint error 
   {
-    prevR = r;
-    prevS = s; 
+
     r = r + deltaR; 
     s = s + deltaS; 
     cout<<"-------------"<<endl;
     cout<<r<<endl;
     cout<<s<<endl; 
-    double b[coeff.size()] = {0.0};
-    double c[coeff.size()] = {0.0}; 
+    long double b[coeff.size()] = {0.0};
+    long double c[coeff.size()] = {0.0}; 
 
- 
+    if(prevR == r && prevS == s)
+      break; 
+
+
       /*GET bn*/
        for (int n = coeff.size()-1; n>-1; n--)
        {
-          double temp_rBn = 0; 
-          double temp_sBn = 0; 
+          long double temp_rBn = 0; 
+          long double temp_sBn = 0; 
 
           temp_rBn = (n+1<=coeff.size()-1)? r*b[n+1]:0.0; 
           temp_sBn = (n+2<=coeff.size()-1)? s*b[n+2]:0.0;  
@@ -123,8 +147,8 @@ vector< vector <double>> getRoots(int _degree, vector<double> _coeff)
       /*GET cn*/
       for (int n = coeff.size()-1; n>-1; n--)
       {
-          double temp_rBn = 0; 
-          double temp_sBn = 0; 
+          long double temp_rBn = 0; 
+          long double temp_sBn = 0; 
 
           temp_rBn = (n+1<=coeff.size()-1)? r*c[n+1]:0.0; 
           temp_sBn = (n+2<=coeff.size()-1)? s*c[n+2]:0.0;  
@@ -140,7 +164,7 @@ vector< vector <double>> getRoots(int _degree, vector<double> _coeff)
           cout<<b[n]<<endl;
       }
       /*DISPLAY cn*/
-      cout<<"-------------"<<endl;
+      
       cout<<"c[n]: "<<endl; 
       for(int n = 0; n<coeff.size();n++)
       {
@@ -149,22 +173,59 @@ vector< vector <double>> getRoots(int _degree, vector<double> _coeff)
       denom = (c[2]*c[2])-(c[1]*c[3]); 
       deltaR = (b[0]*c[3] - b[1]*c[2]) / denom ;
       deltaS = (b[1]*c[1] - b[0]*c[2]) / denom  ;
+      
 
-      if ((deltaR+r == r) && (deltaS +s) == s)
-        break; 
-      // cout<<"-------------"<<endl; 
-      // cout<<"deltaR + R :"<<endl; 
-      // cout<<deltaR+r<<endl; 
-      // cout<<"-------------"<<endl; 
-      // cout<<"deltaS + S :"<<endl; 
-      // cout<<deltaS+s<<endl; 
+      prevR = r; 
+      prevS = s; 
+  
+  
     
-
-
   } 
 
+  // if(!isEven(degree) && i == degree-1)
+  // {
 
+  //   /*
+  //   R(x) = b1(x-r) + b0 
+  //   R(x) = b1x - rb1 + b0
+  //   a = b1 
+  //   b = -rb1 + b0
+  //   */
+  //   roots[] = (-r*b[1] + b[0])/(2*b[1]); 
+  // }
+  // else 
+  // {
+  //   if()
+  //   roots[0][0] = calculatePosRoot(r,s); 
+  //   roots[0][1] = calculateNegRoot(r,s); 
 
+  // }
+    
+
+// imaginary+real 
+// imaginary 
+// real 
+
+roots[0][0] = calculatePosRoot(r,s); 
+roots[0][1] = calculateNegRoot(r,s); 
+/*
+0 0
+0 0
+0 0
+0 0
+*/
+  
+  for( int i = 0; i<roots.size(); i++)
+  {
+      for(int j=0; j<roots[i].size(); j++)
+      {
+          cout<<fixed<<setprecision(10)<<roots[i][j];
+          cout<<","; 
+
+      }
+      cout<<"\n"; 
+
+  }
   
 
 
@@ -176,7 +237,7 @@ vector< vector <double>> getRoots(int _degree, vector<double> _coeff)
 
 
 
-  vector <vector <double>> roots(degree, vector <double> (2, 0)); 
+  
   return roots;  
 
 }
@@ -200,12 +261,53 @@ vector< vector <double>> getRoots(int _degree, vector<double> _coeff)
 //functions 
 
 
-vector<double> getCoeff (string _fileName)
+bool isEven(int degree) 
+{
+  return (degree%2==0);  
+
+}
+long double calculatePosRoot(long double r, long double s)
+{
+  long double discriminant = (r*r)+(4.000*s); 
+
+
+  if (discriminant>=0) 
+  { //if positive 
+
+    return (r + sqrtl(r+(4.000*s)))/2; 
+  }
+
+  else //if 
+  {
+    
+
+    return (r + sqrtl(r+(-4.000*s)))/2; 
+  }
+
+  
+}
+long double calculateNegRoot(long double r, long double s)
+{
+  long double discriminant = (r*r)+(4.000*s); 
+
+
+  if (discriminant>=0) //if positive 
+    return (r - sqrt(r+(4.000*s)))/double(2.00);
+    
+
+
+  else //if 
+    return (r - sqrt(r+(-4.000*s)))/double(2.00);
+}
+
+
+
+vector<long double> getCoeff (string _fileName)
 {
   ifstream inFile; 
   string fileName = _fileName;  
-  vector<double> _coeff; 
-  double degree; 
+  vector<long double> _coeff; 
+  int degree; 
 
 
 
@@ -217,8 +319,6 @@ vector<double> getCoeff (string _fileName)
     exit(1);    
 
   }
-
-
   else 
   {
 
@@ -244,8 +344,9 @@ vector<double> getCoeff (string _fileName)
 } 
 
 
-bool checkRS (double r, double s, double deltaR, double deltaS)
+bool checkRS (long double r, long double s, long double deltaR, long double deltaS)
 {
+
   return (deltaR/r>0 && deltaS/s>0); 
 
 }
